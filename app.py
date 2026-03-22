@@ -1,25 +1,28 @@
-from flask import Flask, request, jsonify, render_template
-from bot import responder_mensagem
-import os
+from flask import Flask, request
+from twilio.twiml.messaging_response import MessagingResponse
 
 app = Flask(__name__)
 
-# Interface web
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template("index.html")
+    return "BOT ONLINE 🚀"
 
-# API do chat
-@app.route('/chat', methods=['POST'])
-def chat():
-    data = request.get_json()
-    mensagem = data.get("mensagem")
+@app.route("/webhook", methods=["POST"])
+def webhook():
+    msg = request.values.get("Body", "").lower()
 
-    resposta = responder_mensagem("cliente", mensagem)
+    resp = MessagingResponse()
 
-    return jsonify({"resposta": resposta})
+    if "oi" in msg:
+        resp.message("Olá! 👋 Bem-vindo ao restaurante.\nDigite:\n1 - Fazer reserva\n2 - Ver cardápio")
+    
+    elif msg == "1":
+        resp.message("Perfeito! 🍽️ Qual dia e horário você deseja reservar?")
+    
+    elif msg == "2":
+        resp.message("Nosso cardápio:\n🍔 Hambúrguer\n🍕 Pizza\n🥗 Salada")
+    
+    else:
+        resp.message("Desculpe, não entendi 🤔\nDigite 1 ou 2")
 
-# Rodar no Railway
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
-    app.run(host="0.0.0.0", port=port)
+    return str(resp)
