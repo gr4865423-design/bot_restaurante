@@ -1,89 +1,46 @@
-usuarios = {}
+etapas = {}
 
 def responder_mensagem(numero, mensagem):
-    mensagem = mensagem.lower().strip()
+    mensagem = mensagem.lower()
 
-    # 🔁 Resetar conversa
-    if mensagem == "menu":
-        usuarios[numero] = {"etapa": "menu"}
+    if numero not in etapas:
+        etapas[numero] = {"etapa": 1}
 
-    if numero not in usuarios:
-        usuarios[numero] = {"etapa": "menu"}
+    etapa = etapas[numero]["etapa"]
 
-    etapa = usuarios[numero]["etapa"]
+    if etapa == 1:
+        etapas[numero]["etapa"] = 2
+        return "Olá! Bem-vindo ao restaurante 🍽️\nQual seu nome?"
 
-    # 📋 MENU INICIAL
-    if etapa == "menu":
-        usuarios[numero]["etapa"] = "opcao"
-        return """🍽️ Bem-vindo ao Restaurante!
+    elif etapa == 2:
+        etapas[numero]["nome"] = mensagem
+        etapas[numero]["etapa"] = 3
+        return f"Prazer, {mensagem}! Para qual dia deseja a reserva?"
 
-Como posso te ajudar?
+    elif etapa == 3:
+        etapas[numero]["dia"] = mensagem
+        etapas[numero]["etapa"] = 4
+        return "Qual horário?"
 
-1️⃣ Fazer reserva
-2️⃣ Falar com atendente
+    elif etapa == 4:
+        etapas[numero]["hora"] = mensagem
+        etapas[numero]["etapa"] = 5
+        return "Para quantas pessoas?"
 
-Digite o número da opção."""
+    elif etapa == 5:
+        etapas[numero]["pessoas"] = mensagem
 
-    # 🔢 ESCOLHA DO MENU
-    elif etapa == "opcao":
-        if mensagem == "1":
-            usuarios[numero]["etapa"] = "nome"
-            return "Perfeito! 😊\n\nQual o seu nome?"
+        # salvar reserva
+        with open("reservas.txt", "a") as f:
+            f.write(
+                f"Nome: {etapas[numero]['nome']}, "
+                f"Dia: {etapas[numero]['dia']}, "
+                f"Hora: {etapas[numero]['hora']}, "
+                f"Pessoas: {mensagem}\n"
+            )
 
-        elif mensagem == "2":
-            return "Um atendente entrará em contato com você em breve! 📞"
+        etapas[numero]["etapa"] = 1
 
-        else:
-            return "❌ Opção inválida. Digite 1 ou 2."
+        return "✅ Reserva confirmada! Te esperamos 🍽️"
 
-    # 🧑 NOME
-    elif etapa == "nome":
-        usuarios[numero]["nome"] = mensagem.title()
-        usuarios[numero]["etapa"] = "data"
-        return f"Prazer, {usuarios[numero]['nome']}! 😄\n\nQual a data da reserva? (Ex: 20/03)"
-
-    # 📅 DATA
-    elif etapa == "data":
-        if "/" not in mensagem:
-            return "❌ Informe a data no formato correto (Ex: 20/03)"
-
-        usuarios[numero]["data"] = mensagem
-        usuarios[numero]["etapa"] = "hora"
-        return "Ótimo! ⏰\n\nQual o horário?"
-
-    # ⏰ HORA
-    elif etapa == "hora":
-        usuarios[numero]["hora"] = mensagem
-        usuarios[numero]["etapa"] = "pessoas"
-        return "Perfeito! 👥\n\nPara quantas pessoas?"
-
-    # 👥 PESSOAS
-    elif etapa == "pessoas":
-        if not mensagem.isdigit():
-            return "❌ Informe apenas números."
-
-        usuarios[numero]["pessoas"] = mensagem
-        usuarios[numero]["etapa"] = "final"
-
-        # 💾 SALVAR NO ARQUIVO
-        with open("reservas.txt", "a", encoding="utf-8") as f:
-            f.write(f"""
-Nome: {usuarios[numero]['nome']}
-Data: {usuarios[numero]['data']}
-Hora: {usuarios[numero]['hora']}
-Pessoas: {usuarios[numero]['pessoas']}
--------------------------
-""")
-
-        return f"""✅ Reserva confirmada!
-
-📛 Nome: {usuarios[numero]['nome']}
-📅 Data: {usuarios[numero]['data']}
-⏰ Horário: {usuarios[numero]['hora']}
-👥 Pessoas: {usuarios[numero]['pessoas']}
-
-Aguardamos você! 🍽️✨
-
-Digite "menu" para voltar ao início."""
-
-    return "Digite 'menu' para começar novamente."
+    return "Digite algo válido."
