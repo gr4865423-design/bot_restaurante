@@ -1,12 +1,15 @@
 from flask import Flask, request
 from twilio.twiml.messaging_response import MessagingResponse
+import os
 
 app = Flask(__name__)
 
+# Rota principal (pra testar no navegador)
 @app.route("/")
 def home():
     return "BOT ONLINE 🚀"
 
+# Webhook do WhatsApp (Twilio)
 @app.route("/webhook", methods=["POST"])
 def webhook():
     msg = request.values.get("Body", "").lower()
@@ -27,6 +30,6 @@ def webhook():
 
     return str(resp)
 
-# 👇 isso aqui é opcional no Railway, mas bom ter
+# ESSENCIAL pro Railway funcionar
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
